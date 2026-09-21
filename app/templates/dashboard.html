@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% block title %}Overview · Command Center{% endblock %}
+{% block page_heading %}Overview{% endblock %}
+{% block content %}
+<section class="mb-4">
+    <div class="d-flex flex-column flex-md-row align-items-md-end justify-content-between gap-2 mb-3">
+        <div>
+            <p class="eyebrow mb-1">Focus dashboard</p>
+            <h2 class="h3 mb-1">What needs your attention?</h2>
+            <p class="text-secondary mb-0">Projects, applications, priorities, and host health in one place.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-light" href="/projects">Projects</a>
+            <a class="btn btn-primary" href="/jobs">Job pipeline</a>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-6 col-xl-3">
+            <div class="metric-card h-100">
+                <div class="metric-label">Active projects</div>
+                <div class="metric-value">{{ stats.projects }}</div>
+                <div class="metric-note">{{ stats.high_priority_projects }} high priority</div>
+            </div>
+        </div>
+        <div class="col-6 col-xl-3">
+            <div class="metric-card h-100">
+                <div class="metric-label">Active applications</div>
+                <div class="metric-value">{{ stats.active_jobs }}</div>
+                <div class="metric-note">{{ stats.interviews }} interview stage</div>
+            </div>
+        </div>
+        <div class="col-6 col-xl-3">
+            <div class="metric-card h-100">
+                <div class="metric-label">Follow-ups due</div>
+                <div class="metric-value {% if stats.follow_ups_due %}text-warning{% endif %}">{{ stats.follow_ups_due }}</div>
+                <div class="metric-note">Recruiter and application actions</div>
+            </div>
+        </div>
+        <div class="col-6 col-xl-3">
+            <div class="metric-card h-100">
+                <div class="metric-label">Host health</div>
+                <div class="metric-value text-success">Healthy</div>
+                <div class="metric-note">{{ system.hostname }}</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="row g-4">
+    <div class="col-12 col-xxl-7">
+        <section class="panel h-100">
+            <div class="panel-header">
+                <div>
+                    <p class="eyebrow mb-1">Execution</p>
+                    <h3 class="h5 mb-0">Current projects</h3>
+                </div>
+                <a href="/projects" class="btn btn-sm btn-outline-secondary">Manage</a>
+            </div>
+            <div class="d-grid gap-3">
+                {% for project in projects %}
+                <article class="project-card">
+                    <div class="d-flex flex-column flex-md-row justify-content-between gap-2 mb-3">
+                        <div>
+                            <div class="d-flex align-items-center flex-wrap gap-2">
+                                <h4 class="h6 mb-0">{{ project.name }}</h4>
+                                <span class="badge badge-soft">{{ project.status }}</span>
+                                <span class="badge {% if project.priority == 'High' %}text-bg-danger{% elif project.priority == 'Medium' %}text-bg-warning{% else %}text-bg-secondary{% endif %}">{{ project.priority }}</span>
+                            </div>
+                            <div class="small text-secondary mt-1">Next: {{ project.next_task or 'No next task set' }}</div>
+                        </div>
+                        <div class="progress-number">{{ project.progress }}%</div>
+                    </div>
+                    <div class="progress" role="progressbar" aria-valuenow="{{ project.progress }}" aria-valuemin="0" aria-valuemax="100">
+                        <div class="progress-bar" style="width: {{ project.progress }}%"></div>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+
+    <div class="col-12 col-xxl-5">
+        <section class="panel h-100">
+            <div class="panel-header">
+                <div>
+                    <p class="eyebrow mb-1">Today</p>
+                    <h3 class="h5 mb-0">Attention queue</h3>
+                </div>
+            </div>
+            <div id="priority-list">
+                {% include 'partials/priorities.html' %}
+            </div>
+        </section>
+    </div>
+
+    <div class="col-12 col-xl-8">
+        <section class="panel h-100">
+            <div class="panel-header">
+                <div>
+                    <p class="eyebrow mb-1">Career analytics</p>
+                    <h3 class="h5 mb-0">Active pipeline by stage</h3>
+                </div>
+                <a href="/jobs?view=kanban" class="btn btn-sm btn-outline-secondary">View Kanban</a>
+            </div>
+            <div id="pipeline-chart" class="pipeline-chart" aria-label="Active applications by pipeline stage"></div>
+            <script id="pipeline-chart-data" type="application/json">{{ pipeline_chart | tojson }}</script>
+        </section>
+    </div>
+
+    <div class="col-12 col-xl-4">
+        <section class="panel h-100">
+            <div class="panel-header">
+                <div>
+                    <p class="eyebrow mb-1">Career</p>
+                    <h3 class="h5 mb-0">Follow-up watchlist</h3>
+                </div>
+            </div>
+            <div class="d-grid gap-2">
+                {% for job in follow_ups %}
+                <article class="follow-up-card">
+                    <div>
+                        <strong class="d-block">{{ job.company }}</strong>
+                        <span class="small text-secondary">{{ job.next_action or job.role }}</span>
+                    </div>
+                    <span class="follow-up follow-up-{{ job.follow_up_state }}">{{ job.follow_up_display }}</span>
+                </article>
+                {% else %}
+                <div class="empty-state">No follow-ups scheduled yet.</div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+
+    <div class="col-12 col-xl-8">
+        <section class="panel h-100">
+            <div class="panel-header">
+                <div>
+                    <p class="eyebrow mb-1">Career</p>
+                    <h3 class="h5 mb-0">Active job pipeline</h3>
+                </div>
+                <a href="/jobs" class="btn btn-sm btn-outline-secondary">Open pipeline</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-dashboard align-middle mb-0">
+                    <thead><tr><th>Company / role</th><th>Stage</th><th>Setup</th><th>Next action</th></tr></thead>
+                    <tbody>
+                    {% for job in jobs %}
+                        <tr>
+                            <td><strong>{{ job.company }}</strong><div class="small text-secondary">{{ job.role }}</div></td>
+                            <td><span class="badge badge-soft">{{ job.stage }}</span></td>
+                            <td>{{ job.work_setup }}</td>
+                            <td>{{ job.next_action or '—' }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <div class="col-12 col-xl-4">
+        <section class="panel h-100">
+            <div class="panel-header">
+                <div>
+                    <p class="eyebrow mb-1">Observability</p>
+                    <h3 class="h5 mb-0">Host readiness</h3>
+                </div>
+                <span class="badge text-bg-success">Live</span>
+            </div>
+            <div class="system-grid">
+                <div><span>CPU</span><strong>{{ system.cpu }}%</strong></div>
+                <div><span>Memory</span><strong>{{ system.memory }}%</strong></div>
+                <div><span>Disk</span><strong>{{ system.disk }}%</strong></div>
+                <div><span>OS</span><strong>{{ system.platform }}</strong></div>
+            </div>
+            <hr>
+            <p class="small text-secondary mb-0">This panel reads the current machine now. The same code will work on Raspberry Pi OS later.</p>
+        </section>
+    </div>
+</div>
+{% endblock %}

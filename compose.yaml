@@ -1,0 +1,20 @@
+services:
+  dashboard:
+    build: .
+    container_name: ai-dashboard
+    ports:
+      - "${DASHBOARD_BIND_ADDRESS:-127.0.0.1}:8000:8000"
+    environment:
+      DASHBOARD_DB: /app/data/dashboard.db
+      FINANCE_DB: /app/data/finance.db
+      JOB_POSTINGS_DIR: /imports/job_postings
+    volumes:
+      - ./data:/app/data
+      - type: bind
+        source: ${JOB_POSTINGS_DIR_HOST:-C:/work/local/AI/job-hunt-agent/data/job_postings}
+        target: /imports/job_postings
+        read_only: true
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped

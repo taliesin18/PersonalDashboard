@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Learning · Command Center{% endblock %}
+{% block page_heading %}Learning{% endblock %}
+{% block header_actions %}
+<button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#add-learning-modal">＋ <span class="d-none d-sm-inline">Add learning</span></button>
+{% endblock %}
+{% block content %}
+<section class="mb-4 d-flex flex-column flex-md-row align-items-md-end justify-content-between gap-3">
+    <div>
+        <p class="eyebrow mb-1">Growth plan</p>
+        <h2 class="h3 mb-1">Learning & certifications</h2>
+        <p class="text-secondary mb-0">Current study tracks, useful resources, and the next action to take.</p>
+    </div>
+</section>
+
+<div class="d-grid gap-3">
+    {% for track in tracks %}
+    <article class="panel learning-card">
+        <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
+            <div>
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                    <h3 class="h5 mb-0">{{ track.title }}</h3>
+                    <span class="badge {% if track.status == 'Active' %}text-bg-success{% elif track.status == 'Planned' %}text-bg-primary{% else %}badge-soft{% endif %}">{{ track.status }}</span>
+                </div>
+                <div class="small text-secondary">{{ track.provider or 'Independent study' }}</div>
+            </div>
+            <div class="d-flex gap-2 align-self-md-start">
+                {% if track.resource_url %}<a class="btn btn-sm btn-outline-light" href="{{ track.resource_url }}" target="_blank" rel="noopener noreferrer">Open resource ↗</a>{% endif %}
+                <a class="btn btn-sm btn-outline-secondary" href="/learning/{{ track.id }}/edit">Edit</a>
+            </div>
+        </div>
+        <div class="learning-detail-grid mt-3">
+            <div><span>Current</span><strong>{{ track.current_topic or 'Not set' }}</strong></div>
+            <div><span>Next</span><strong>{{ track.next_action or 'Not set' }}</strong></div>
+        </div>
+        {% if track.progress is not none %}
+        <div class="d-flex align-items-center gap-3 mt-3"><div class="progress flex-grow-1"><div class="progress-bar" style="width: {{ track.progress }}%"></div></div><span class="small fw-semibold">{{ track.progress }}%</span></div>
+        {% else %}
+        <div class="small text-secondary mt-3">Progress has not been set yet.</div>
+        {% endif %}
+    </article>
+    {% endfor %}
+</div>
+{% endblock %}
+{% block page_modals %}
+<div class="modal fade" id="add-learning-modal" tabindex="-1" aria-labelledby="add-learning-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header"><div><p class="eyebrow mb-1">Study input</p><h2 class="modal-title h5" id="add-learning-title">Add a learning track</h2></div><button class="btn-close" type="button" data-bs-dismiss="modal"></button></div>
+            <form method="post" action="/learning" class="modal-body d-grid gap-3">
+                <div><label class="form-label">Course / certification</label><input class="form-control" name="title" required></div>
+                <div><label class="form-label">Provider</label><input class="form-control" name="provider" placeholder="e.g. Microsoft Learn"></div>
+                <div class="row g-2">
+                    <div class="col-6"><label class="form-label">Status</label><select class="form-select" name="status"><option>Active</option><option selected>Planned</option><option>Completed</option><option>Paused</option></select></div>
+                    <div class="col-6"><label class="form-label">Progress %</label><input class="form-control" type="number" min="0" max="100" name="progress"></div>
+                </div>
+                <div><label class="form-label">Course link</label><input class="form-control" type="url" name="url" placeholder="https://…"></div>
+                <div><label class="form-label">Current topic</label><input class="form-control" name="current_topic"></div>
+                <div><label class="form-label">Next action</label><input class="form-control" name="next_action"></div>
+                <div class="d-flex justify-content-end gap-2"><button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary">Add learning track</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

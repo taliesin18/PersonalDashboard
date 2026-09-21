@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Edit Learning Track · Command Center{% endblock %}
+{% block page_heading %}Learning{% endblock %}
+{% block content %}
+<section class="mb-4 d-flex justify-content-between align-items-end gap-3">
+    <div><p class="eyebrow mb-1">Study editor</p><h2 class="h3 mb-0">Update learning track</h2></div>
+    <a class="btn btn-outline-light" href="/learning">Back to learning</a>
+</section>
+<section class="panel col-12 col-xl-8">
+    <form method="post" action="/learning/{{ track.id }}" class="d-grid gap-3">
+        <div><label class="form-label">Course / certification</label><input class="form-control" name="title" value="{{ track.title }}" required></div>
+        <div><label class="form-label">Provider</label><input class="form-control" name="provider" value="{{ track.provider }}"></div>
+        <div class="row g-2">
+            <div class="col-6"><label class="form-label">Status</label><select class="form-select" name="status">{% for option in ['Active', 'Planned', 'Completed', 'Paused'] %}<option {% if option == track.status %}selected{% endif %}>{{ option }}</option>{% endfor %}</select></div>
+            <div class="col-6"><label class="form-label">Progress %</label><input class="form-control" type="number" min="0" max="100" name="progress" value="{{ track.progress if track.progress is not none else '' }}"></div>
+        </div>
+        <div><label class="form-label">Course link</label><input class="form-control" type="url" name="url" value="{{ track.url }}"></div>
+        <div><label class="form-label">Current topic</label><input class="form-control" name="current_topic" value="{{ track.current_topic }}"></div>
+        <div><label class="form-label">Next action</label><input class="form-control" name="next_action" value="{{ track.next_action }}"></div>
+        <button class="btn btn-primary">Save learning track</button>
+    </form>
+</section>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}Job Applications · Command Center{% endblock %}
+{% block page_heading %}Job Applications{% endblock %}
+{% block header_actions %}
+<button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#add-job-modal">＋ <span class="d-none d-sm-inline">Add application</span></button>
+{% endblock %}
+{% block content %}
+{% if import_result.created is not none %}
+<div class="alert alert-success border-0 mb-4">Job-Hunt Agent sync complete: {{ import_result.created }} added and {{ import_result.updated }} updated.</div>
+{% endif %}
+<section class="panel">
+    <div class="panel-header">
+        <div><p class="eyebrow mb-1">Career observability</p><h2 class="h5 mb-0">{% if view == 'kanban' %}Application Kanban{% else %}Application pipeline{% endif %}</h2></div>
+        <div class="d-flex flex-wrap justify-content-end gap-2">
+            <div class="btn-group btn-group-sm" role="group" aria-label="Application view">
+                <a class="btn {% if view == 'list' %}btn-primary{% else %}btn-outline-secondary{% endif %}" href="/jobs">List</a>
+                <a class="btn {% if view == 'kanban' %}btn-primary{% else %}btn-outline-secondary{% endif %}" href="/jobs?view=kanban">Kanban</a>
+            </div>
+            {% if job_postings_available %}
+            <form method="post" action="/jobs/import"><input type="hidden" name="view" value="{{ view }}"><button class="btn btn-sm btn-outline-secondary">↻ Import Job-Hunt data</button></form>
+            {% else %}
+            <span class="small text-secondary">Job-Hunt data folder unavailable</span>
+            {% endif %}
+        </div>
+    </div>
+    {% if view == 'kanban' %}
+    {% include 'partials/kanban_board.html' %}
+    {% else %}
+    <div class="table-responsive">
+        <table class="table table-dashboard align-middle mb-0">
+            <thead><tr><th>Company / role</th><th>Stage</th><th>Applied</th><th>Follow-up</th><th>Next action</th></tr></thead>
+            <tbody id="job-rows">{% include 'partials/job_rows.html' %}</tbody>
+        </table>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}
+{% block page_modals %}
+<div class="modal fade" id="add-job-modal" tabindex="-1" aria-labelledby="add-job-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header"><div><p class="eyebrow mb-1">Pipeline input</p><h2 class="modal-title h5" id="add-job-title">Add application</h2></div><button class="btn-close" type="button" data-bs-dismiss="modal"></button></div>
+            <form hx-post="/jobs" hx-target="{% if view == 'kanban' %}#kanban-board{% else %}#job-rows{% endif %}" hx-swap="{% if view == 'kanban' %}outerHTML{% else %}innerHTML{% endif %}" data-close-modal="add-job-modal" class="modal-body d-grid gap-3">
+                <input type="hidden" name="view" value="{{ view }}">
+                <div><label class="form-label">Company</label><input class="form-control" name="company" required></div>
+                <div><label class="form-label">Role</label><input class="form-control" name="role" required></div>
+                <div class="row g-2">
+                    <div class="col-6"><label class="form-label">Stage</label><select class="form-select" name="stage">{% for stage in stages %}<option>{{ stage }}</option>{% endfor %}</select></div>
+                    <div class="col-6"><label class="form-label">Setup</label><select class="form-select" name="work_setup"><option>Remote</option><option>Hybrid</option><option>Onsite</option><option>TBD</option></select></div>
+                </div>
+                <div class="row g-2">
+                    <div class="col-6"><label class="form-label">Applied</label><input class="form-control" name="application_date" type="date" value="{{ today }}"></div>
+                    <div class="col-6"><label class="form-label">Follow-up</label><input class="form-control" name="next_follow_up" type="date"></div>
+                </div>
+                <div><label class="form-label">Salary / target</label><input class="form-control" name="salary_text" placeholder="e.g. ₱110k"></div>
+                <div><label class="form-label">Last contact</label><input class="form-control" name="last_contact" placeholder="e.g. Sep 18 - recruiter email"></div>
+                <div><label class="form-label">Next action</label><input class="form-control" name="next_action"></div>
+                <div><label class="form-label">Source</label><input class="form-control" name="source" placeholder="e.g. LinkedIn, referral"></div>
+                <div class="d-flex justify-content-end gap-2"><button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary">Add application</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

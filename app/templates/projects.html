@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Projects · Command Center{% endblock %}
+{% block page_heading %}Projects{% endblock %}
+{% block header_actions %}
+<button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#add-project-modal">＋ <span class="d-none d-sm-inline">Add project</span></button>
+{% endblock %}
+{% block content %}
+<section class="panel">
+    <div class="panel-header"><div><p class="eyebrow mb-1">Portfolio</p><h2 class="h5 mb-0">Project register</h2></div></div>
+    <div class="table-responsive">
+        <table class="table table-dashboard align-middle mb-0">
+            <thead><tr><th>Project</th><th>Status</th><th>Priority</th><th>Progress</th><th>Next task</th><th></th></tr></thead>
+            <tbody id="project-rows">{% include 'partials/project_rows.html' %}</tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
+{% block page_modals %}
+<div class="modal fade" id="add-project-modal" tabindex="-1" aria-labelledby="add-project-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header"><div><p class="eyebrow mb-1">Quick add</p><h2 class="modal-title h5" id="add-project-title">New project</h2></div><button class="btn-close" type="button" data-bs-dismiss="modal"></button></div>
+            <form hx-post="/projects" hx-target="#project-rows" hx-swap="innerHTML" data-close-modal="add-project-modal" class="modal-body d-grid gap-3">
+                <div><label class="form-label">Project name</label><input class="form-control" name="name" required></div>
+                <div class="row g-2">
+                    <div class="col-6"><label class="form-label">Status</label><select class="form-select" name="status"><option>Active</option><option>Planning</option><option>Research</option><option>Paused</option><option>Done</option></select></div>
+                    <div class="col-6"><label class="form-label">Priority</label><select class="form-select" name="priority"><option>High</option><option selected>Medium</option><option>Low</option></select></div>
+                </div>
+                <div><label class="form-label">Progress %</label><input class="form-control" name="progress" type="number" min="0" max="100" value="0"></div>
+                <div><label class="form-label">Next task</label><input class="form-control" name="next_task"></div>
+                <div><label class="form-label">Repo / reference</label><input class="form-control" name="repo"></div>
+                <div class="d-flex justify-content-end gap-2"><button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary">Add project</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,32 @@
+<div id="kanban-board" class="kanban-scroll">
+    <div class="kanban-board">
+        {% for stage in stages %}
+        <section class="kanban-column">
+            <div class="kanban-column-header">
+                <h3 class="kanban-column-title mb-0">{{ stage }}</h3>
+                <span class="badge badge-soft">{{ kanban[stage] | length }}</span>
+            </div>
+            {% for job in kanban[stage] %}
+            <article class="kanban-card">
+                <strong class="d-block">{{ job.company }}</strong>
+                <span class="small text-secondary d-block mt-1">{{ job.role }}</span>
+                <div class="kanban-meta">
+                    <span>{{ job.work_setup }}</span>
+                    <span>·</span>
+                    <span>{{ job.days_in_stage }}d in stage</span>
+                </div>
+                {% if job.next_follow_up %}
+                <div class="mt-2"><span class="follow-up follow-up-{{ job.follow_up_state }}">Follow up {{ job.follow_up_display }}</span></div>
+                {% endif %}
+                {% if job.next_action %}<p class="small mb-0 mt-2 text-secondary">Next: {{ job.next_action }}</p>{% endif %}
+                <select class="form-select form-select-sm kanban-stage-select" name="stage" aria-label="Move {{ job.company }} to another stage" hx-post="/jobs/{{ job.id }}/stage" hx-trigger="change" hx-target="#kanban-board" hx-swap="outerHTML">
+                    {% for option in stages %}<option {% if option == job.stage %}selected{% endif %}>{{ option }}</option>{% endfor %}
+                </select>
+            </article>
+            {% else %}
+            <div class="kanban-empty">No applications</div>
+            {% endfor %}
+        </section>
+        {% endfor %}
+    </div>
+</div>

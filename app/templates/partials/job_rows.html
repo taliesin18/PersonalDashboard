@@ -1,0 +1,9 @@
+{% for job in jobs %}
+<tr>
+    <td><strong>{{ job.company }}</strong><div class="small text-secondary">{{ job.role }}{% if job.job_url %} · <a href="{{ job.job_url }}" target="_blank" rel="noopener noreferrer">Posting ↗</a>{% endif %}</div></td>
+    <td><span class="badge badge-soft">{{ job.stage }}</span></td>
+    <td>{{ job.application_date_display }}</td>
+    <td><span class="follow-up follow-up-{{ job.follow_up_state }}">{{ job.follow_up_display }}</span></td>
+    <td>{{ job.next_action or '—' }}</td>
+</tr>
+{% endfor %}

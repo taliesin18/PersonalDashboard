@@ -1,0 +1,30 @@
+{% for project in projects %}
+<tr>
+    <td>
+        <strong>{{ project.name }}</strong>
+        <div class="small text-secondary">
+            {{ project.repo or 'Local project' }}
+            {% if project.artifact_count %}<span class="ms-1">· {{ project.artifact_count }} artifact{{ '' if project.artifact_count == 1 else 's' }}</span>{% endif %}
+        </div>
+    </td>
+    <td><span class="badge badge-soft">{{ project.status }}</span></td>
+    <td>{{ project.priority }}</td>
+    <td style="min-width: 140px"><div class="d-flex align-items-center gap-2"><div class="progress flex-grow-1"><div class="progress-bar" style="width:{{ project.progress }}%"></div></div><span class="small">{{ project.progress }}%</span></div></td>
+    <td>{{ project.next_task or '—' }}</td>
+    <td class="text-end text-nowrap">
+        {% if project.resources | length == 1 %}
+        <a class="btn btn-sm btn-outline-light" href="{{ project.resources[0].url }}" target="_blank" rel="noopener noreferrer">Open resource ↗</a>
+        {% elif project.resources | length > 1 %}
+        <div class="btn-group btn-group-sm">
+            <button class="btn btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Open resource</button>
+            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark text-start">
+                {% for resource in project.resources %}
+                <li><a class="dropdown-item" href="{{ resource.url }}" target="_blank" rel="noopener noreferrer"><span class="d-block">{{ resource.label }} ↗</span><small class="text-secondary">{{ resource.artifact_type }}</small></a></li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        <a class="btn btn-sm btn-outline-secondary" href="/projects/{{ project.id }}/edit">Edit</a>
+    </td>
+</tr>
+{% endfor %}

@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}Edit {{ project.name }} · Command Center{% endblock %}
+{% block page_heading %}Project Portfolio{% endblock %}
+{% block content %}
+<section class="mb-4 d-flex flex-column flex-md-row align-items-md-end justify-content-between gap-3">
+    <div>
+        <p class="eyebrow mb-1">Portfolio editor</p>
+        <h2 class="h3 mb-1">{{ project.name }}</h2>
+        <p class="text-secondary mb-0">Keep the project profile and its useful links together.</p>
+    </div>
+    <a class="btn btn-outline-light" href="/projects">Back to projects</a>
+</section>
+
+<div class="row g-4">
+    <div class="col-12 col-xl-7">
+        <section class="panel">
+            <p class="eyebrow mb-1">Project details</p>
+            <h3 class="h5 mb-3">Edit portfolio entry</h3>
+            <form method="post" action="/projects/{{ project.id }}" class="d-grid gap-3">
+                <div><label class="form-label">Project name</label><input class="form-control" name="name" value="{{ project.name }}" required></div>
+                <div class="row g-2">
+                    <div class="col-6"><label class="form-label">Status</label><select class="form-select" name="status">{% for option in ['Active', 'Planning', 'Research', 'Paused', 'Done'] %}<option {% if option == project.status %}selected{% endif %}>{{ option }}</option>{% endfor %}</select></div>
+                    <div class="col-6"><label class="form-label">Priority</label><select class="form-select" name="priority">{% for option in ['High', 'Medium', 'Low'] %}<option {% if option == project.priority %}selected{% endif %}>{{ option }}</option>{% endfor %}</select></div>
+                </div>
+                <div><label class="form-label">Progress %</label><input class="form-control" name="progress" type="number" min="0" max="100" value="{{ project.progress }}"></div>
+                <div><label class="form-label">Next task</label><input class="form-control" name="next_task" value="{{ project.next_task }}"></div>
+                <div><label class="form-label">Primary repository / reference</label><input class="form-control" name="repo" value="{{ project.repo }}" placeholder="https://github.com/you/project"></div>
+                <button class="btn btn-primary">Save project</button>
+            </form>
+        </section>
+    </div>
+    <div class="col-12 col-xl-5">
+        <section class="panel mb-4">
+            <p class="eyebrow mb-1">Artifacts</p>
+            <h3 class="h5 mb-3">Add a project link</h3>
+            <form hx-post="/projects/{{ project.id }}/artifacts" hx-target="#artifact-list" hx-swap="innerHTML" hx-on::after-request="if(event.detail.successful) this.reset()" class="d-grid gap-3">
+                <div class="row g-2">
+                    <div class="col-7"><label class="form-label">Label</label><input class="form-control" name="label" placeholder="Architecture document" required></div>
+                    <div class="col-5"><label class="form-label">Type</label><select class="form-select" name="artifact_type"><option>GitHub</option><option>Google Drive</option><option>Document</option><option>Demo</option><option>Link</option></select></div>
+                </div>
+                <div><label class="form-label">URL</label><input class="form-control" type="url" name="url" placeholder="https://…" required></div>
+                <button class="btn btn-outline-light">Add artifact</button>
+            </form>
+        </section>
+        <section class="panel">
+            <div class="panel-header"><div><p class="eyebrow mb-1">Portfolio links</p><h3 class="h5 mb-0">Saved artifacts</h3></div></div>
+            <div id="artifact-list">{% include 'partials/project_artifacts.html' %}</div>
+        </section>
+    </div>
+</div>
+{% endblock %}

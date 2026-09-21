@@ -1,0 +1,16 @@
+<div class="d-grid gap-2">
+{% for item in priorities %}
+    <div class="priority-item">
+        <button class="priority-check" title="Mark complete"
+                hx-post="/priorities/{{ item.id }}/toggle"
+                hx-target="#priority-list"
+                hx-swap="innerHTML">✓</button>
+        <div class="min-w-0">
+            <div class="fw-semibold text-truncate">{{ item.title }}</div>
+            <div class="small text-secondary">{{ item.category }} · {{ item.priority }}</div>
+        </div>
+    </div>
+{% else %}
+    <div class="empty-state">No open priorities. Nice.</div>
+{% endfor %}
+</div>

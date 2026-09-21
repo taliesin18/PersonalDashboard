@@ -1,0 +1,11 @@
+{% for artifact in artifacts %}
+<article class="artifact-item">
+    <div class="min-w-0">
+        <span class="badge badge-soft me-1">{{ artifact.artifact_type }}</span>
+        <a href="{{ artifact.url }}" target="_blank" rel="noopener noreferrer" class="fw-semibold text-decoration-none">{{ artifact.label }} ↗</a>
+    </div>
+    <button class="btn btn-sm btn-outline-danger" hx-post="/artifacts/{{ artifact.id }}/delete" hx-target="#artifact-list" hx-swap="innerHTML" hx-confirm="Remove this artifact link?">Remove</button>
+</article>
+{% else %}
+<div class="empty-state">No artifacts yet. Add your GitHub, Google Drive, demo, or reference links here.</div>
+{% endfor %}

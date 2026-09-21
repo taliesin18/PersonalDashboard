@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}Job Kanban · Command Center{% endblock %}
+{% block page_heading %}Job Kanban{% endblock %}
+{% block content %}
+<section class="mb-4 d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3">
+    <div>
+        <p class="eyebrow mb-1">Career workflow</p>
+        <h2 class="h3 mb-1">Application Kanban</h2>
+        <p class="text-secondary mb-0">Move applications through the pipeline and keep follow-ups visible.</p>
+    </div>
+    <a class="btn btn-primary" href="/jobs">Add application</a>
+</section>
+
+{% include 'partials/kanban_board.html' %}
+{% endblock %}

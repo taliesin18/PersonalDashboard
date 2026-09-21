@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% block title %}Financials · Command Center{% endblock %}
+{% block page_heading %}Financials{% endblock %}
+{% block header_actions %}
+<div class="dropdown">
+    <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">＋ <span class="d-none d-sm-inline">Add</span></button>
+    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark">
+        <li><button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#add-financial-account-modal">Account</button></li>
+        <li><button class="dropdown-item" type="button" {% if accounts %}data-bs-toggle="modal" data-bs-target="#add-transaction-modal"{% else %}disabled{% endif %}>Inflow or outflow</button></li>
+        <li><button class="dropdown-item" type="button" {% if accounts %}data-bs-toggle="modal" data-bs-target="#add-recurring-payment-modal"{% else %}disabled{% endif %}>Monthly payment</button></li>
+    </ul>
+</div>
+{% endblock %}
+{% block content %}
+<section class="mb-4 d-flex flex-column flex-md-row align-items-md-end justify-content-between gap-3">
+    <div>
+        <p class="eyebrow mb-1">Private money tracker</p>
+        <h2 class="h3 mb-1">Financial overview</h2>
+        <p class="text-secondary mb-0">Manual, local-only account and spending history. No bank credentials or external connections.</p>
+    </div>
+</section>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg"><div class="metric-card h-100"><div class="metric-label">Cash on hand · PHP</div><div class="metric-value">{{ summary.cash_display }}</div><div class="metric-note">Bank, cash, and e-wallet accounts</div></div></div>
+    <div class="col-6 col-lg"><div class="metric-card h-100"><div class="metric-label">Investments · PHP</div><div class="metric-value text-info">{{ summary.investment_display }}</div><div class="metric-note">Tracked investment account balances</div></div></div>
+    <div class="col-6 col-lg"><div class="metric-card h-100"><div class="metric-label">Inflow this month · PHP</div><div class="metric-value text-success">{{ summary.inflow_display }}</div><div class="metric-note">Recorded income and deposits</div></div></div>
+    <div class="col-6 col-lg"><div class="metric-card h-100"><div class="metric-label">Outflow this month · PHP</div><div class="metric-value text-warning">{{ summary.outflow_display }}</div><div class="metric-note">Recorded expenses and payments</div></div></div>
+    <div class="col-12 col-lg"><div class="metric-card h-100"><div class="metric-label">Monthly payments · PHP</div><div class="metric-value">{{ summary.monthly_payment_display }}</div><div class="metric-note">Active monthly payment schedule</div></div></div>
+</div>
+
+<div class="row g-4">
+    <div class="col-12 col-xl-7">
+        <section class="panel h-100">
+            <div class="panel-header"><div><p class="eyebrow mb-1">Accounts</p><h3 class="h5 mb-0">Banks & investments</h3></div></div>
+            <div class="account-grid">
+                {% for account in accounts %}
+                <article class="account-card">
+                    <div class="d-flex justify-content-between gap-2"><div><strong class="d-block">{{ account.name }}</strong><span class="small text-secondary">{{ account.institution or account.account_type }}</span></div><span class="badge badge-soft">{{ account.account_type }}</span></div>
+                    <div class="account-balance">{{ account.balance_display }}</div>
+                    <div class="small text-secondary">{{ account.currency }} · Current tracked balance</div>
+                </article>
+                {% else %}
+                <div class="empty-state">Add your first bank, e-wallet, cash, or investment account from the ＋ Add menu.</div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+    <div class="col-12 col-xl-5">
+        <section class="panel h-100">
+            <div class="panel-header"><div><p class="eyebrow mb-1">Recurring</p><h3 class="h5 mb-0">Monthly payments</h3></div></div>
+            <div class="d-grid gap-2">
+                {% for payment in recurring %}
+                <article class="recurring-item">
+                    <div><strong class="d-block">{{ payment.name }}</strong><span class="small text-secondary">{{ payment.account_name }} · {{ payment.category }}</span></div>
+                    <div class="text-end"><strong class="d-block">{{ payment.amount_display }}</strong><span class="follow-up follow-up-{{ payment.due_state }}">Due {{ payment.due_display }}</span><form method="post" action="/financials/recurring-payments/{{ payment.id }}/record" class="mt-2"><button class="btn btn-sm btn-outline-light">Record payment</button></form></div>
+                </article>
+                {% else %}
+                <div class="empty-state">No monthly payments recorded yet.</div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+    <div class="col-12">
+        <section class="panel">
+            <div class="panel-header"><div><p class="eyebrow mb-1">History</p><h3 class="h5 mb-0">Recent inflow & outflow</h3></div></div>
+            <div class="table-responsive">
+                <table class="table table-dashboard align-middle mb-0">
+                    <thead><tr><th>Date</th><th>Description</th><th>Account</th><th>Category</th><th>Type</th><th class="text-end">Amount</th></tr></thead>
+                    <tbody>
+                    {% for transaction in transactions %}
+                    <tr>
+                        <td>{{ transaction.occurred_on }}</td>
+                        <td><strong>{{ transaction.description or 'Untitled transaction' }}</strong></td>
+                        <td>{{ transaction.account_name }}</td>
+                        <td>{{ transaction.category or '—' }}</td>
+                        <td><span class="badge {% if transaction.transaction_type == 'Inflow' %}text-bg-success{% else %}text-bg-danger{% endif %}">{{ transaction.transaction_type }}</span></td>
+                        <td class="text-end fw-semibold {{ transaction.type_class }}">{% if transaction.transaction_type == 'Inflow' %}+{% else %}−{% endif %}{{ transaction.amount_display }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6"><div class="empty-state">Your recorded inflow and outflow history will appear here.</div></td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}
+{% block page_modals %}
+<div class="modal fade" id="add-financial-account-modal" tabindex="-1" aria-labelledby="add-financial-account-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><div><p class="eyebrow mb-1">Account setup</p><h2 class="modal-title h5" id="add-financial-account-title">Add account</h2></div><button class="btn-close" type="button" data-bs-dismiss="modal"></button></div>
+        <form method="post" action="/financials/accounts" class="modal-body d-grid gap-3">
+            <div><label class="form-label">Account name</label><input class="form-control" name="name" placeholder="e.g. BPI savings" required></div>
+            <div><label class="form-label">Bank / broker / institution</label><input class="form-control" name="institution" placeholder="e.g. BPI, GCash, broker name"></div>
+            <div class="row g-2"><div class="col-6"><label class="form-label">Type</label><select class="form-select" name="account_type">{% for account_type in account_types %}<option>{{ account_type }}</option>{% endfor %}</select></div><div class="col-6"><label class="form-label">Currency</label><select class="form-select" name="currency">{% for currency in currencies %}<option>{{ currency }}</option>{% endfor %}</select></div></div>
+            <div><label class="form-label">Starting balance</label><input class="form-control" type="number" name="opening_balance" min="0" step="0.01" value="0" required></div>
+            <div class="d-flex justify-content-end gap-2"><button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary">Add account</button></div>
+        </form>
+    </div></div>
+</div>
+
+<div class="modal fade" id="add-transaction-modal" tabindex="-1" aria-labelledby="add-transaction-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><div><p class="eyebrow mb-1">History input</p><h2 class="modal-title h5" id="add-transaction-title">Record inflow or outflow</h2></div><button class="btn-close" type="button" data-bs-dismiss="modal"></button></div>
+        <form method="post" action="/financials/transactions" class="modal-body d-grid gap-3">
+            <div><label class="form-label">Account</label><select class="form-select" name="account_id" required>{% for account in accounts %}<option value="{{ account.id }}">{{ account.name }} · {{ account.currency }}</option>{% endfor %}</select></div>
+            <div class="row g-2"><div class="col-6"><label class="form-label">Type</label><select class="form-select" name="transaction_type"><option>Inflow</option><option>Outflow</option></select></div><div class="col-6"><label class="form-label">Date</label><input class="form-control" type="date" name="occurred_on" value="{{ today }}" required></div></div>
+            <div><label class="form-label">Amount</label><input class="form-control" type="number" name="amount" min="0.01" step="0.01" required></div>
+            <div><label class="form-label">Category</label><input class="form-control" name="category" placeholder="e.g. Salary, groceries, utilities"></div>
+            <div><label class="form-label">Description</label><input class="form-control" name="description" placeholder="Optional detail"></div>
+            <div class="d-flex justify-content-end gap-2"><button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary">Record transaction</button></div>
+        </form>
+    </div></div>
+</div>
+
+<div class="modal fade" id="add-recurring-payment-modal" tabindex="-1" aria-labelledby="add-recurring-payment-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><div><p class="eyebrow mb-1">Recurring outflow</p><h2 class="modal-title h5" id="add-recurring-payment-title">Add monthly payment</h2></div><button class="btn-close" type="button" data-bs-dismiss="modal"></button></div>
+        <form method="post" action="/financials/recurring-payments" class="modal-body d-grid gap-3">
+            <div><label class="form-label">Payment name</label><input class="form-control" name="name" placeholder="e.g. Internet bill" required></div>
+            <div><label class="form-label">Paid from</label><select class="form-select" name="account_id" required>{% for account in accounts %}<option value="{{ account.id }}">{{ account.name }} · {{ account.currency }}</option>{% endfor %}</select></div>
+            <div class="row g-2"><div class="col-6"><label class="form-label">Monthly amount</label><input class="form-control" type="number" name="amount" min="0.01" step="0.01" required></div><div class="col-6"><label class="form-label">Next due</label><input class="form-control" type="date" name="next_due_date" value="{{ today }}" required></div></div>
+            <div><label class="form-label">Category</label><input class="form-control" name="category" value="Monthly payment"></div>
+            <div class="d-flex justify-content-end gap-2"><button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary">Add monthly payment</button></div>
+        </form>
+    </div></div>
+</div>
+{% endblock %}
