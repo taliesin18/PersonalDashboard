@@ -2,7 +2,11 @@
 {% block title %}Learning · Command Center{% endblock %}
 {% block page_heading %}Learning{% endblock %}
 {% block header_actions %}
+{% if shared_read_only %}
+<span class="badge text-bg-secondary">Shared snapshot · Read-only</span>
+{% else %}
 <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#add-learning-modal">＋ <span class="d-none d-sm-inline">Add learning</span></button>
+{% endif %}
 {% endblock %}
 {% block content %}
 <section class="mb-4 d-flex flex-column flex-md-row align-items-md-end justify-content-between gap-3">
@@ -12,6 +16,8 @@
         <p class="text-secondary mb-0">Current study tracks, useful resources, and the next action to take.</p>
     </div>
 </section>
+
+{% if shared_read_only %}<div class="alert alert-secondary border-0 mb-4">Learning records are read from the Personal Data Layer. Editing will be enabled when its authenticated write API is available.</div>{% endif %}
 
 <div class="d-grid gap-3">
     {% for track in tracks %}
@@ -26,7 +32,7 @@
             </div>
             <div class="d-flex gap-2 align-self-md-start">
                 {% if track.resource_url %}<a class="btn btn-sm btn-outline-light" href="{{ track.resource_url }}" target="_blank" rel="noopener noreferrer">Open resource ↗</a>{% endif %}
-                <a class="btn btn-sm btn-outline-secondary" href="/learning/{{ track.id }}/edit">Edit</a>
+                {% if not shared_read_only %}<a class="btn btn-sm btn-outline-secondary" href="/learning/{{ track.id }}/edit">Edit</a>{% endif %}
             </div>
         </div>
         <div class="learning-detail-grid mt-3">
@@ -43,6 +49,7 @@
 </div>
 {% endblock %}
 {% block page_modals %}
+{% if not shared_read_only %}
 <div class="modal fade" id="add-learning-modal" tabindex="-1" aria-labelledby="add-learning-title" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
@@ -62,4 +69,5 @@
         </div>
     </div>
 </div>
+{% endif %}
 {% endblock %}

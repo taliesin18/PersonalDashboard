@@ -13,7 +13,6 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY --chown=dashboard:dashboard app ./app
-RUN mkdir -p /app/data && chown dashboard:dashboard /app/data
 
 USER dashboard
 

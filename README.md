@@ -50,11 +50,41 @@ Health check:
 http://127.0.0.1:8000/health
 ```
 
-The first launch creates `data/dashboard.db` and inserts starter data. The Financials tab creates its separate, local-only `data/finance.db` when it is first opened. Everything in `data/` is intentionally excluded from Git, so your records are never included in the public repository.
+The dashboard reads shared projects, applications, learning records, and priorities through the Personal Data Layer API. It does not open its former local dashboard database. The legacy `data/` directory remains ignored by Git so private records are never included in the public repository.
+
+## Personal Data Layer connection
+
+Start the Personal Data Layer separately before opening the dashboard:
+
+```powershell
+cd C:\work\local\personal_data_layer
+.\.venv\Scripts\python -m uvicorn app.main:app --host 127.0.0.1 --port 8100
+```
+
+The dashboard uses `http://127.0.0.1:8100/api/v1` by default. To use another trusted endpoint, set `PERSONAL_DATA_BASE_URL` before starting the dashboard. The first shared-data API is intentionally read-only: add/edit controls are disabled until the layer provides authenticated write endpoints. Financial records are not displayed through this integration until a dedicated finance API and authorization model are approved.
+
+## Homelab Host Observer
+
+The Homelab tab gets machine metrics and listening-service status through a separate, read-only Host Observer. This is the translation layer: it uses the same API contract on Windows, Linux, and Raspberry Pi OS, so the dashboard never needs device-specific process commands or host-level container permissions.
+
+Start it on the device you want to monitor:
+
+```powershell
+cd C:\work\local\ai-dashboard
+.\.venv\Scripts\python -m uvicorn host_observer.main:app --host 127.0.0.1 --port 8200
+```
+
+The dashboard uses `http://127.0.0.1:8200/api/v1` when it runs directly, or `http://host.docker.internal:8200/api/v1` in Docker. It is read-only and binds to loopback by default. If a Raspberry Pi deployment needs a different private route, set `HOST_OBSERVER_BASE_URL` rather than changing dashboard code.
+
+Optional per-device service aliases can be supplied without changing code:
+
+```powershell
+$env:HOST_OBSERVER_SERVICE_LABELS = '{"8000":"Personal Dashboard","8100":"Personal Data Layer","8200":"Host Observer","11434":"Ollama"}'
+```
 
 ## Docker deployment
 
-Docker is recommended as the **portable deployment path** for the eventual Raspberry Pi 5. It gives the laptop and Pi the same runtime while retaining a deliberately small stack: one FastAPI container and one SQLite file. Direct Python remains the faster option for day-to-day development because it supports reload mode.
+Docker is recommended as the **portable deployment path** for the eventual Raspberry Pi 5. It gives the laptop and Pi the same runtime while keeping the dashboard as a stateless client of the separately run Personal Data Layer. Direct Python remains the faster option for day-to-day development because it supports reload mode.
 
 With Docker Desktop running on Windows, start the dashboard with:
 
@@ -62,9 +92,7 @@ With Docker Desktop running on Windows, start the dashboard with:
 docker compose up --build
 ```
 
-It is bound to `127.0.0.1:8000` by default, so it remains available only on the machine running it. The SQLite databases are stored outside the container at `data/dashboard.db` and `data/finance.db`; rebuilding or replacing the container does not erase them.
-
-The Compose setup also mounts `C:\work\local\AI\job-hunt-agent\data\job_postings` as a read-only source. On **Job Applications**, use **Import Job-Hunt data** to synchronize the agent's posting status into the dashboard Kanban. The source files are never changed. To use a different source location, set `JOB_POSTINGS_DIR_HOST` before starting Docker.
+It is bound to `127.0.0.1:8000` by default, so it remains available only on the machine running it. The container calls the Personal Data Layer and Host Observer through `host.docker.internal` by default and never receives a mounted database, job-posting folder, Docker socket, or host PID namespace. On Linux or Raspberry Pi, set `PERSONAL_DATA_BASE_URL` and `HOST_OBSERVER_BASE_URL` to the trusted private API addresses or service names used by your deployment.
 
 Useful commands:
 
@@ -100,25 +128,13 @@ Only do this on a trusted private network. Windows Firewall may ask whether Pyth
 The application is deliberately portable. Docker Compose is the recommended way to run it on the Pi:
 
 1. Install 64-bit Raspberry Pi OS and Docker Engine with the Compose plugin.
-2. Copy the project folder and, if applicable, its `data/dashboard.db` file to the Pi.
-3. Before the first start, make the data directory writable by the container user:
-
-   ```bash
-   mkdir -p data
-   sudo chown -R 10001:10001 data
-   ```
-
-4. Start with `docker compose up -d --build` for Pi-local access, or set `DASHBOARD_BIND_ADDRESS=0.0.0.0` for trusted-LAN access.
-5. Keep it LAN-only initially; add Tailscale later for remote access.
-6. Back up the `data` directory regularly. It is the persistent application state.
-7. Optionally self-host Bootstrap, HTMX, and ApexCharts assets so the UI does not depend on CDN access.
-
-If you also move the Job-Hunt Agent to the Pi, set its posting directory before starting the dashboard so the importer can read it:
-
-```bash
-export JOB_POSTINGS_DIR_HOST=/home/pi/job-hunt-agent/data/job_postings
-docker compose up -d --build
-```
+2. Deploy the Personal Data Layer as a separate private service, including its own controlled data volume and backups.
+3. Run the Host Observer on the Pi itself and keep it bound to private loopback, or provide it through an equally private service route.
+4. Set `PERSONAL_DATA_BASE_URL` and `HOST_OBSERVER_BASE_URL` to those service addresses.
+5. Start the dashboard with `docker compose up -d --build` for Pi-local access, or set `DASHBOARD_BIND_ADDRESS=0.0.0.0` for trusted-LAN access.
+6. Keep it LAN-only initially; add Tailscale later for remote access.
+7. Back up the Personal Data Layer according to its own backup plan; the dashboard itself is stateless.
+8. Optionally self-host Bootstrap, HTMX, and ApexCharts assets so the UI does not depend on CDN access.
 
 The official Python base image is multi-architecture, so the same Dockerfile builds on an x86 Windows laptop and a 64-bit ARM Raspberry Pi 5. `psutil` automatically reads metrics from Windows now and Linux/Raspberry Pi OS later.
 

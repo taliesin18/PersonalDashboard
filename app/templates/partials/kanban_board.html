@@ -19,7 +19,7 @@
                 <div class="mt-2"><span class="follow-up follow-up-{{ job.follow_up_state }}">Follow up {{ job.follow_up_display }}</span></div>
                 {% endif %}
                 {% if job.next_action %}<p class="small mb-0 mt-2 text-secondary">Next: {{ job.next_action }}</p>{% endif %}
-                <select class="form-select form-select-sm kanban-stage-select" name="stage" aria-label="Move {{ job.company }} to another stage" hx-post="/jobs/{{ job.id }}/stage" hx-trigger="change" hx-target="#kanban-board" hx-swap="outerHTML">
+                <select class="form-select form-select-sm kanban-stage-select" name="stage" aria-label="Move {{ job.company }} to another stage" {% if shared_read_only %}disabled title="Stage updates are not available in the shared read-only snapshot"{% else %}hx-post="/jobs/{{ job.id }}/stage" hx-trigger="change" hx-target="#kanban-board" hx-swap="outerHTML"{% endif %}>
                     {% for option in stages %}<option {% if option == job.stage %}selected{% endif %}>{{ option }}</option>{% endfor %}
                 </select>
             </article>

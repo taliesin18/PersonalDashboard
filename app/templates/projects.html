@@ -2,11 +2,16 @@
 {% block title %}Projects · Command Center{% endblock %}
 {% block page_heading %}Projects{% endblock %}
 {% block header_actions %}
+{% if shared_read_only %}
+<span class="badge text-bg-secondary">Shared snapshot · Read-only</span>
+{% else %}
 <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#add-project-modal">＋ <span class="d-none d-sm-inline">Add project</span></button>
+{% endif %}
 {% endblock %}
 {% block content %}
 <section class="panel">
     <div class="panel-header"><div><p class="eyebrow mb-1">Portfolio</p><h2 class="h5 mb-0">Project register</h2></div></div>
+    {% if shared_read_only %}<div class="alert alert-secondary border-0">Projects are read from the Personal Data Layer. Editing and artifact management will be enabled when its authenticated write API is ready.</div>{% endif %}
     <div class="table-responsive">
         <table class="table table-dashboard align-middle mb-0">
             <thead><tr><th>Project</th><th>Status</th><th>Priority</th><th>Progress</th><th>Next task</th><th></th></tr></thead>
@@ -16,6 +21,7 @@
 </section>
 {% endblock %}
 {% block page_modals %}
+{% if not shared_read_only %}
 <div class="modal fade" id="add-project-modal" tabindex="-1" aria-labelledby="add-project-title" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -34,4 +40,5 @@
         </div>
     </div>
 </div>
+{% endif %}
 {% endblock %}

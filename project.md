@@ -932,6 +932,8 @@ The initial visual redesign and job-workflow foundation are now implemented:
 - read-only, idempotent import from the local Job-Hunt Agent posting folder
 - editable Learning module seeded with SC-900, LabEx DevOps, and AWS SAA study tracks
 - local-only Financials module with a separate SQLite database for banks, investments, inflow/outflow history, and recurring monthly payments
+- hotfix refactor: projects, job applications, learning items, and priorities now use the Personal Data Layer API instead of the dashboard database or Job-Hunt file mount; the current snapshot is deliberately read-only
+- Homelab local-services view uses a separate, read-only Host Observer API that normalizes host metrics and listening TCP services across Windows, Linux, and Raspberry Pi OS
 
 ### Recommended next implementation target
 

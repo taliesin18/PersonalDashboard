@@ -24,7 +24,7 @@
             </ul>
         </div>
         {% endif %}
-        <a class="btn btn-sm btn-outline-secondary" href="/projects/{{ project.id }}/edit">Edit</a>
+        {% if not shared_read_only %}<a class="btn btn-sm btn-outline-secondary" href="/projects/{{ project.id }}/edit">Edit</a>{% endif %}
     </td>
 </tr>
 {% endfor %}

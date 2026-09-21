@@ -1,10 +1,10 @@
 <div class="d-grid gap-2">
 {% for item in priorities %}
     <div class="priority-item">
-        <button class="priority-check" title="Mark complete"
-                hx-post="/priorities/{{ item.id }}/toggle"
+        <button class="priority-check" title="{% if shared_read_only %}Priority updates are not available in the shared read-only snapshot{% else %}Mark complete{% endif %}"
+                {% if shared_read_only %}disabled{% else %}hx-post="/priorities/{{ item.id }}/toggle"
                 hx-target="#priority-list"
-                hx-swap="innerHTML">✓</button>
+                hx-swap="innerHTML"{% endif %}>✓</button>
         <div class="min-w-0">
             <div class="fw-semibold text-truncate">{{ item.title }}</div>
             <div class="small text-secondary">{{ item.category }} · {{ item.priority }}</div>

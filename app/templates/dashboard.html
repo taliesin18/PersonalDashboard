@@ -15,6 +15,8 @@
         </div>
     </div>
 
+    {% if shared_read_only %}<div class="alert alert-secondary border-0 mb-3">Shared data is supplied by the Personal Data Layer in read-only mode. Updates will be enabled after its authenticated write API is available.</div>{% endif %}
+
     <div class="row g-3">
         <div class="col-6 col-xl-3">
             <div class="metric-card h-100">

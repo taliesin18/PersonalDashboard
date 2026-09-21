@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Homelab · Command Center{% endblock %}
+{% block page_heading %}Homelab{% endblock %}
+{% block content %}
+<section class="mb-4 d-flex flex-column flex-md-row align-items-md-end justify-content-between gap-3">
+    <div>
+        <p class="eyebrow mb-1">Device-neutral observability</p>
+        <h2 class="h3 mb-1">Local services</h2>
+        <p class="text-secondary mb-0">A private Host Observer translates Windows, Linux, and Raspberry Pi status into one dashboard view.</p>
+    </div>
+    {% if snapshot %}<span class="badge text-bg-success">● Observer connected</span>{% endif %}
+</section>
+
+{% if observer_error %}
+<section class="panel col-12 col-xl-8">
+    <p class="eyebrow mb-1">Observer unavailable</p>
+    <h2 class="h4">Host status is not connected</h2>
+    <p class="text-secondary mb-3">{{ observer_error }}</p>
+    <div class="alert alert-secondary border-0 mb-0">Start the Host Observer on the device you want to monitor, then refresh this page. It binds to private loopback by default.</div>
+</section>
+{% else %}
+<div class="row g-3 mb-4">
+    <div class="col-6 col-xl-3"><div class="metric-card h-100"><div class="metric-label">CPU</div><div class="metric-value">{{ snapshot.host.cpu_percent }}%</div><div class="metric-note">{{ snapshot.host.hostname }}</div></div></div>
+    <div class="col-6 col-xl-3"><div class="metric-card h-100"><div class="metric-label">Memory</div><div class="metric-value">{{ snapshot.host.memory_percent }}%</div><div class="metric-note">{{ snapshot.host.platform }}</div></div></div>
+    <div class="col-6 col-xl-3"><div class="metric-card h-100"><div class="metric-label">Disk</div><div class="metric-value">{{ snapshot.host.disk_percent }}%</div><div class="metric-note">Host filesystem usage</div></div></div>
+    <div class="col-6 col-xl-3"><div class="metric-card h-100"><div class="metric-label">Local-only</div><div class="metric-value text-success">{{ snapshot.summary.local_only }}</div><div class="metric-note">{{ snapshot.summary.network_listeners }} network listener{{ '' if snapshot.summary.network_listeners == 1 else 's' }}</div></div></div>
+</div>
+
+<section class="panel">
+    <div class="panel-header">
+        <div><p class="eyebrow mb-1">Listening services</p><h3 class="h5 mb-0">{{ snapshot.summary.total_listeners }} active endpoint{{ '' if snapshot.summary.total_listeners == 1 else 's' }}</h3></div>
+        <span class="small text-secondary">Captured {{ snapshot.captured_at }}</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-dashboard align-middle mb-0">
+            <thead><tr><th>Service</th><th>Process</th><th>Address</th><th>Port</th><th>Visibility</th></tr></thead>
+            <tbody>
+            {% for service in snapshot.services %}
+            <tr>
+                <td><strong>{{ service.name }}</strong></td>
+                <td class="text-secondary">{{ service.process }}</td>
+                <td><code>{{ service.address }}</code></td>
+                <td><code>{{ service.port }}</code></td>
+                <td><span class="badge {% if service.scope == 'Local only' %}text-bg-success{% else %}text-bg-warning{% endif %}">{{ service.scope }}</span></td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5"><div class="empty-state">No listening TCP services were reported by this device.</div></td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

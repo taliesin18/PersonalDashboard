@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} · Command Center{% endblock %}
+{% block page_heading %}{{ title }}{% endblock %}
+{% block content %}
+<section class="panel col-12 col-xl-8">
+    <p class="eyebrow mb-1">Private data boundary</p>
+    <h2 class="h3 mb-2">{{ heading }}</h2>
+    <p class="text-secondary mb-4">{{ message }}</p>
+    {% if setup_hint %}<div class="alert alert-secondary border-0 mb-0">{{ setup_hint }}</div>{% endif %}
+</section>
+{% endblock %}

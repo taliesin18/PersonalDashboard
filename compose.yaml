@@ -5,15 +5,12 @@ services:
     ports:
       - "${DASHBOARD_BIND_ADDRESS:-127.0.0.1}:8000:8000"
     environment:
-      DASHBOARD_DB: /app/data/dashboard.db
-      FINANCE_DB: /app/data/finance.db
-      JOB_POSTINGS_DIR: /imports/job_postings
-    volumes:
-      - ./data:/app/data
-      - type: bind
-        source: ${JOB_POSTINGS_DIR_HOST:-C:/work/local/AI/job-hunt-agent/data/job_postings}
-        target: /imports/job_postings
-        read_only: true
+      PERSONAL_DATA_BASE_URL: ${PERSONAL_DATA_BASE_URL:-http://host.docker.internal:8100/api/v1}
+      PERSONAL_DATA_TIMEOUT_SECONDS: ${PERSONAL_DATA_TIMEOUT_SECONDS:-3}
+      HOST_OBSERVER_BASE_URL: ${HOST_OBSERVER_BASE_URL:-http://host.docker.internal:8200/api/v1}
+      HOST_OBSERVER_TIMEOUT_SECONDS: ${HOST_OBSERVER_TIMEOUT_SECONDS:-3}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     init: true
     security_opt:
       - no-new-privileges:true

@@ -2,7 +2,11 @@
 {% block title %}Job Applications · Command Center{% endblock %}
 {% block page_heading %}Job Applications{% endblock %}
 {% block header_actions %}
+{% if shared_read_only %}
+<span class="badge text-bg-secondary">Shared snapshot · Read-only</span>
+{% else %}
 <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#add-job-modal">＋ <span class="d-none d-sm-inline">Add application</span></button>
+{% endif %}
 {% endblock %}
 {% block content %}
 {% if import_result.created is not none %}
@@ -16,13 +20,14 @@
                 <a class="btn {% if view == 'list' %}btn-primary{% else %}btn-outline-secondary{% endif %}" href="/jobs">List</a>
                 <a class="btn {% if view == 'kanban' %}btn-primary{% else %}btn-outline-secondary{% endif %}" href="/jobs?view=kanban">Kanban</a>
             </div>
-            {% if job_postings_available %}
+            {% if not shared_read_only and job_postings_available %}
             <form method="post" action="/jobs/import"><input type="hidden" name="view" value="{{ view }}"><button class="btn btn-sm btn-outline-secondary">↻ Import Job-Hunt data</button></form>
-            {% else %}
+            {% elif not shared_read_only %}
             <span class="small text-secondary">Job-Hunt data folder unavailable</span>
             {% endif %}
         </div>
     </div>
+    {% if shared_read_only %}<div class="alert alert-secondary border-0">Applications are read from the Personal Data Layer. Creating applications, importing job-posting files, and stage changes will return when the authenticated write API is available.</div>{% endif %}
     {% if view == 'kanban' %}
     {% include 'partials/kanban_board.html' %}
     {% else %}
@@ -36,6 +41,7 @@
 </section>
 {% endblock %}
 {% block page_modals %}
+{% if not shared_read_only %}
 <div class="modal fade" id="add-job-modal" tabindex="-1" aria-labelledby="add-job-title" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
@@ -61,4 +67,5 @@
         </div>
     </div>
 </div>
+{% endif %}
 {% endblock %}
